@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1d1a14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="GooseEye">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
+<title>GooseEye — гусь видит?</title>
+<style>
+:root{
+  --bg:#1d1a14; --card:#2a261d; --card2:#332e23; --line:#4a4333;
+  --text:#f1ead8; --muted:#b8ad94; --straw:#d9b968; --accent:#e0a53a;
+  --green:#5fae5a; --yellow:#e6c043; --red:#d9534a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+main{max-width:720px;margin:0 auto;padding:14px 14px 60px}
+header{display:flex;align-items:center;gap:12px;margin:6px 0 14px}
+header .logo{width:46px;height:46px;flex:none}
+h1{font-size:24px;margin:0;letter-spacing:.2px}
+header p{margin:2px 0 0;color:var(--muted);font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0}
+h2{font-size:17px;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+h2 .n{background:var(--accent);color:#1d1a14;border-radius:50%;width:24px;height:24px;display:inline-grid;place-items:center;font-size:14px;font-weight:700}
+.muted{color:var(--muted);font-size:14px}
+.btn{appearance:none;border:0;border-radius:12px;padding:13px 16px;font-size:16px;font-weight:600;background:var(--accent);color:#1d1a14;cursor:pointer;width:100%}
+.btn.sec{background:var(--card2);color:var(--text);border:1px solid var(--line)}
+.btn:disabled{opacity:.45}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row .btn{flex:1;width:auto}
+input[type=file]{display:none}
+#photoWrap{position:relative;margin-top:10px;display:none;touch-action:none}
+#photo{width:100%;border-radius:10px;display:block;background:#000}
+.field{margin:12px 0}
+.field label.t{display:block;font-size:14px;color:var(--muted);margin-bottom:6px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{flex:1 1 auto;min-width:76px;border:1px solid var(--line);background:var(--card2);color:var(--text);border-radius:10px;padding:9px 8px;font-size:14px;cursor:pointer}
+.seg button.on{background:var(--straw);color:#1d1a14;border-color:var(--straw);font-weight:600}
+.warn{background:#4a2620;border:1px solid #8a3a2e;border-radius:10px;padding:8px 10px;font-size:13px;margin-top:8px;display:none}
+.chk{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.chk:last-child{border-bottom:0}
+.chk input{width:22px;height:22px;flex:none;accent-color:var(--straw);margin-top:1px}
+.chk small{display:block;color:var(--muted)}
+#result{display:none}
+.gauge{display:flex;align-items:center;gap:16px}
+.light{display:flex;flex-direction:column;gap:6px;background:#111;padding:8px;border-radius:14px}
+.light i{width:30px;height:30px;border-radius:50%;background:#333;display:block}
+.light i.g.on{background:var(--green);box-shadow:0 0 14px var(--green)}
+.light i.y.on{background:var(--yellow);box-shadow:0 0 14px var(--yellow)}
+.light i.r.on{background:var(--red);box-shadow:0 0 14px var(--red)}
+.big{font-size:44px;font-weight:800;line-height:1}
+.big small{font-size:16px;font-weight:600;color:var(--muted)}
+.sub{font-size:18px;margin-top:4px}
+.verdict{margin-top:6px;font-size:15px}
+.bar{display:grid;grid-template-columns:1fr 70px;gap:4px 10px;align-items:center;margin:8px 0}
+.bar .lbl{font-size:14px}
+.bar .val{text-align:right;font-size:13px;color:var(--muted)}
+.bar .track{grid-column:1/3;height:8px;border-radius:5px;background:#3a3427;overflow:hidden}
+.bar .track b{display:block;height:100%;border-radius:5px}
+.fix{background:var(--card2);border-left:4px solid var(--accent);border-radius:8px;padding:9px 11px;margin:8px 0;font-size:14px}
+.fix b{display:block;font-size:15px;margin-bottom:2px}
+.legend{display:flex;flex-wrap:wrap;gap:10px;font-size:13px;color:var(--muted);margin-top:6px}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;background:var(--c)}
+#gooseView{width:100%;border-radius:10px;background:#000;display:block;margin-top:8px;image-rendering:auto}
+input[type=range]{width:100%;accent-color:var(--straw)}
+details{margin:6px 0}
+summary{cursor:pointer;font-weight:600;padding:6px 0}
+details p,details li{font-size:14px;color:var(--muted)}
+table.j{width:100%;border-collapse:collapse;font-size:13px}
+table.j td,table.j th{border-bottom:1px solid var(--line);padding:6px 4px;text-align:left}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--straw);color:#1d1a14;padding:10px 16px;border-radius:10px;font-weight:600;display:none;z-index:9}
+.foot{font-size:12px;color:var(--muted);text-align:center;margin-top:20px}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <svg class="logo" viewBox="0 0 64 64" aria-hidden="true">
+    <circle cx="32" cy="32" r="31" fill="#2a261d" stroke="#d9b968" stroke-width="2"/>
+    <path d="M10 40c8-2 14-8 22-8s14 6 22 8" fill="none" stroke="#d9b968" stroke-width="3" stroke-linecap="round"/>
+    <path d="M18 26l10 4 4-10 4 10 10-4-12 8z" fill="#f1ead8"/>
+    <circle cx="32" cy="46" r="5" fill="#e0a53a"/><circle cx="32" cy="46" r="2" fill="#1d1a14"/>
+  </svg>
+  <div><h1>GooseEye</h1><p>Гусь видит? Проверка маскировки окопа по фото. Работает на телефоне, без интернета.</p></div>
+</header>
+
+<section class="card">
+  <h2><span class="n">1</span>Фото окопа</h2>
+  <p class="muted">Напарник поднимает телефон над головой и снимает окоп сверху-сбоку, как его видит подлетающий гусь. Охотник лежит так же, как при подлёте.</p>
+  <div class="row">
+    <button class="btn" id="btnCam">📷 Снять</button>
+    <button class="btn sec" id="btnGal">🖼 Из галереи</button>
+  </div>
+  <input type="file" id="fileCam" accept="image/*" capture="environment">
+  <input type="file" id="fileGal" accept="image/*">
+  <div id="photoWrap">
+    <canvas id="photo"></canvas>
+    <p class="muted" style="margin:8px 0 0">Обведите пальцем рамку вокруг окопа с охотником. Всё вокруг рамки приложение считает фоном (стернёй).</p>
+  </div>
+  <div class="field">
+    <label class="t">С какого расстояния снято</label>
+    <div class="seg" data-k="dist">
+      <button data-v="4" class="on">3–5 м, сверху</button>
+      <button data-v="10">8–12 м</button>
+      <button data-v="20">15–25 м</button>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <h2><span class="n">2</span>Условия</h2>
+  <div class="field"><label class="t">Какой гусь</label>
+    <div class="seg" data-k="species">
+      <button data-v="white" class="on">Белолобый</button>
+      <button data-v="grey">Серый</button>
+      <button data-v="bean">Гуменник</button>
+      <button data-v="lesser">Пискулька</button>
+      <button data-v="redb">Краснозобая казарка</button>
+      <button data-v="unk">Не знаю</button>
+    </div>
+    <div class="warn" id="protWarn">⚠️ Пискулька и краснозобая казарка — редкие охраняемые виды, охота на них запрещена. Оценка показывается только для справки; стрелять по ним нельзя. В смешанных стаях с белолобым их легко спутать.</div>
+  </div>
+  <div class="field"><label class="t">Время</label>
+    <div class="seg" data-k="time">
+      <button data-v="dawn">Рассвет</button>
+      <button data-v="morning" class="on">Утро</button>
+      <button data-v="day">День</button>
+      <button data-v="evening">Вечерка</button>
+      <button data-v="dusk">Сумерки</button>
+    </div>
+  </div>
+  <div class="field"><label class="t">Небо</label>
+    <div class="seg" data-k="sky">
+      <button data-v="sun" class="on">Солнце</button>
+      <button data-v="partly">Переменно</button>
+      <button data-v="overcast">Пасмурно</button>
+      <button data-v="fog">Туман / снег</button>
+    </div>
+  </div>
+  <div class="field"><label class="t">Где солнце относительно окопа (откуда идёт гусь)</label>
+    <div class="seg" data-k="sunpos">
+      <button data-v="behind">За спиной (гусю в глаза)</button>
+      <button data-v="side" class="on">Сбоку</button>
+      <button data-v="face">Мне в лицо</button>
+      <button data-v="none">Нет солнца</button>
+    </div>
+  </div>
+  <div class="field"><label class="t">Сезон</label>
+    <div class="seg" data-k="season">
+      <button data-v="early">Сентябрь (много молодых)</button>
+      <button data-v="mid" class="on">Октябрь</button>
+      <button data-v="late">Ноябрь и позже</button>
+      <button data-v="spring">Весна</button>
+    </div>
+  </div>
+  <div class="field"><label class="t">Подо мной</label>
+    <div class="seg" data-k="ground">
+      <button data-v="stubble" class="on">Стерня</button>
+      <button data-v="plough">Пахота</button>
+      <button data-v="grass">Трава / степь</button>
+      <button data-v="snow">Снег</button>
+    </div>
+  </div>
+  <div class="field"><label class="t">Ветер</label>
+    <div class="seg" data-k="wind">
+      <button data-v="calm">Штиль</button>
+      <button data-v="mod" class="on">Умеренный</button>
+      <button data-v="strong">Сильный</button>
+    </div>
+  </div>
+  <div class="field"><label class="t">Гусь битый? (давление охоты)</label>
+    <div class="seg" data-k="pressure">
+      <button data-v="none">Тут не стреляли</button>
+      <button data-v="some" class="on">Иногда стреляют</button>
+      <button data-v="heavy">Стреляют каждый день</button>
+    </div>
+  </div>
+  <div class="field"><label class="t">Стая</label>
+    <div class="seg" data-k="flock">
+      <button data-v="few">1–5</button>
+      <button data-v="family" class="on">6–30</button>
+      <button data-v="big">30–200</button>
+      <button data-v="huge">200+</button>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <h2><span class="n">3</span>Чего не видно на фото</h2>
+  <label class="chk"><input type="checkbox" id="c_move"><span>Во время подлёта никто не шевелится и не выглядывает<small>Движение выдаёт сильнее всего остального</small></span></label>
+  <label class="chk"><input type="checkbox" id="c_face"><span>Лицо закрыто маской или сеткой<small>Светлое лицо — самое заметное пятно в поле</small></span></label>
+  <label class="chk"><input type="checkbox" id="c_gloves"><span>Руки в перчатках</span></label>
+  <label class="chk"><input type="checkbox" id="c_gun"><span>Ствол матовый или закрыт, очков и бликов нет</span></label>
+  <label class="chk"><input type="checkbox" id="c_shells"><span>Гильзы, пакеты и мусор убраны</span></label>
+  <label class="chk"><input type="checkbox" id="c_tracks"><span>Следы, свежая земля и примятая стерня вокруг замаскированы</span></label>
+  <label class="chk"><input type="checkbox" id="c_wash"><span>Одежда не стирана обычным порошком (без отбеливателей)<small>Отбеливатели светятся в ультрафиолете, а гусь его видит</small></span></label>
+  <div style="margin-top:12px"><button class="btn" id="btnRun" disabled>Оценить</button></div>
+  <p class="muted" id="needPhoto" style="margin:8px 0 0">Сначала сделайте фото.</p>
+</section>
+
+<section class="card" id="result">
+  <h2>Результат</h2>
+  <div class="gauge">
+    <div class="light"><i class="r"></i><i class="y"></i><i class="g"></i></div>
+    <div>
+      <div class="big" id="pSee">—</div>
+      <div class="sub" id="pNot">—</div>
+      <div class="verdict" id="verdict"></div>
+    </div>
+  </div>
+
+  <h2 style="margin-top:18px">Что выдаёт</h2>
+  <div id="bars"></div>
+  <div class="legend">
+    <span style="--c:#ff3b30">блики</span><span style="--c:#ff9f0a">кожа, светлые пятна</span><span style="--c:#bf5af2">тёмная «дыра», тень</span><span style="--c:#0a84ff">синее и белое (УФ)</span>
+  </div>
+  <div class="row" style="margin-top:8px">
+    <button class="btn sec" id="btnMarks">Показать на фото</button>
+  </div>
+
+  <h2 style="margin-top:18px">Что исправить</h2>
+  <div id="fixes"></div>
+
+  <h2 style="margin-top:18px">Глазами гуся</h2>
+  <p class="muted">Острота зрения гуся примерно в 8 раз ниже человеческой: мелкий рисунок камуфляжа он не различает. Поэтому выдают не детали, а пятна: блик, светлое лицо, тёмная дыра, ровное пятно другого цвета.</p>
+  <canvas id="gooseView"></canvas>
+  <label class="muted" for="gDist">Высота / дистанция гуся: <b id="gDistV">50</b> м</label>
+  <input type="range" id="gDist" min="15" max="150" step="5" value="50">
+
+  <h2 style="margin-top:18px">Чем кончилось? (в журнал)</h2>
+  <p class="muted">Отметьте после подлёта: из этих записей потом можно будет сделать проценты точнее.</p>
+  <div class="row">
+    <button class="btn sec" data-out="landed">🎯 Подошли / сели</button>
+    <button class="btn sec" data-out="flared">↗️ Отвернули</button>
+    <button class="btn sec" data-out="passed">➡️ Прошли мимо</button>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Журнал охот</h2>
+  <div id="journal" class="muted">Пока пусто.</div>
+  <div class="row" style="margin-top:10px">
+    <button class="btn sec" id="btnCopy">Скопировать журнал</button>
+    <button class="btn sec" id="btnClear">Очистить</button>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Как видит гусь — коротко</h2>
+  <details><summary>Обзор почти 360°</summary><p>Глаза по бокам головы: гусь видит почти всё вокруг, но объёмного зрения впереди у него мало. Подкрасться незаметно нельзя, спрятаться можно.</p></details>
+  <details><summary>Ультрафиолет</summary><p>У гусей и уток есть четвёртый тип колбочек, чувствительных к УФ. Отбеливатели из стирального порошка светятся в УФ, и камуфляж, постиранный обычным порошком, для гуся может «гореть». Стирайте охотничье без отбеливателей.</p></details>
+  <details><summary>Утро и вечер</summary><p>Ультрафиолет есть в первом и последнем свете дня, и птицы хорошо видят в сумерках. Блики в сумерках слабее, но светлое лицо на тёмном фоне заметно ещё сильнее.</p></details>
+  <details><summary>Блеск и тень</summary><p>Новая ткань засидки блестит: её натирают грязью. Утреннее солнце даёт от лежака тень на много метров, поэтому окоп копают глубже, а края сглаживают соломой и травой из этого же поля.</p></details>
+  <details><summary>Поздний сезон и битый гусь</summary><p>К концу сезона гусь насмотрелся на окопы и чучела, а старые птицы ведут стаю. Если гуси уже «сели в голове», но в последний момент отваливают, виновата обычно маскировка, а не чучела.</p></details>
+  <details><summary>Большая стая</summary><p>Чем больше глаз, тем выше шанс, что заметит хоть один, а тревога одного поднимает всех.</p></details>
+  <details><summary>Пискулька и краснозобая казарка</summary><p>Пискулька похожа на белолобого гуся, но меньше; она чаще других подлетает близко. Обе — охраняемые виды. Научитесь отличать их до выстрела.</p></details>
+</section>
+
+<p class="foot">Оценка — модель на основе советов охотников и данных о зрении птиц, а не измерение. Проценты примерные; журнал охот поможет их уточнить.</p>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s);
+const state={dist:"4",species:"white",time:"morning",sky:"sun",sunpos:"side",season:"mid",ground:"stubble",wind:"mod",pressure:"some",flock:"family"};
+let img=null, W=0, H=0, imgData=null, box=null, marks=null, showMarks=false, last=null;
+
+function toast(t){const e=$("#toast");e.textContent=t;e.style.display="block";clearTimeout(toast._t);toast._t=setTimeout(()=>e.style.display="none",1800);}
+
+// ---- segmented buttons
+document.querySelectorAll(".seg").forEach(seg=>{
+  seg.addEventListener("click",e=>{
+    const b=e.target.closest("button"); if(!b) return;
+    seg.querySelectorAll("button").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on"); state[seg.dataset.k]=b.dataset.v;
+    if(seg.dataset.k==="species") $("#protWarn").style.display=(b.dataset.v==="lesser"||b.dataset.v==="redb")?"block":"none";
+  });
+});
+
+// ---- photo input
+$("#btnCam").onclick=()=>$("#fileCam").click();
+$("#btnGal").onclick=()=>$("#fileGal").click();
+["#fileCam","#fileGal"].forEach(id=>$(id).addEventListener("change",e=>{
+  const f=e.target.files&&e.target.files[0]; if(!f) return;
+  const url=URL.createObjectURL(f); const im=new Image();
+  im.onload=()=>{loadImage(im);URL.revokeObjectURL(url);};
+  im.onerror=()=>toast("Не удалось открыть фото");
+  im.src=url; e.target.value="";
+}));
+
+function loadImage(im){
+  const MAX=640; const s=Math.min(1,MAX/Math.max(im.naturalWidth,im.naturalHeight));
+  W=Math.round(im.naturalWidth*s); H=Math.round(im.naturalHeight*s);
+  const c=document.createElement("canvas"); c.width=W;c.height=H;
+  const x=c.getContext("2d"); x.drawImage(im,0,0,W,H);
+  img=c; imgData=x.getImageData(0,0,W,H).data;
+  box={x:W*0.3,y:H*0.3,w:W*0.4,h:H*0.4};
+  marks=null; showMarks=false;
+  $("#photoWrap").style.display="block";
+  $("#btnRun").disabled=false; $("#needPhoto").style.display="none";
+  $("#result").style.display="none";
+  draw();
+}
+
+function draw(){
+  const cv=$("#photo"); cv.width=W; cv.height=H;
+  const x=cv.getContext("2d"); x.drawImage(img,0,0);
+  if(showMarks&&marks){
+    for(const m of marks){x.fillStyle=m.c;x.globalAlpha=.85;x.fillRect(m.x-1,m.y-1,3,3);}
+    x.globalAlpha=1;
+  }
+  // dim outside box
+  x.fillStyle="rgba(0,0,0,.35)";
+  x.fillRect(0,0,W,box.y); x.fillRect(0,box.y+box.h,W,H-box.y-box.h);
+  x.fillRect(0,box.y,box.x,box.h); x.fillRect(box.x+box.w,box.y,W-box.x-box.w,box.h);
+  x.strokeStyle="#e0a53a"; x.lineWidth=Math.max(2,W/220); x.setLineDash([8,6]);
+  x.strokeRect(box.x,box.y,box.w,box.h); x.setLineDash([]);
+}
+
+// ---- draw box with finger
+(function(){
+  const cv=$("#photo"); let start=null;
+  const pt=e=>{const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)*W/r.width,y:(e.clientY-r.top)*H/r.height};};
+  cv.addEventListener("pointerdown",e=>{if(!img)return;start=pt(e);cv.setPointerCapture(e.pointerId);});
+  cv.addEventListener("pointermove",e=>{
+    if(!start)return; const p=pt(e);
+    const x0=Math.max(0,Math.min(start.x,p.x)),y0=Math.max(0,Math.min(start.y,p.y));
+    const x1=Math.min(W,Math.max(start.x,p.x)),y1=Math.min(H,Math.max(start.y,p.y));
+    if(x1-x0>8&&y1-y0>8){box={x:x0,y:y0,w:x1-x0,h:y1-y0};draw();}
+  });
+  const end=()=>{start=null;};
+  cv.addEventListener("pointerup",end); cv.addEventListener("pointercancel",end);
+})();
+
+// ---- image analysis
+function lab(r,g,b){
+  const f=v=>{v/=255;return v<=0.04045?v/12.92:Math.pow((v+0.055)/1.055,2.4);};
+  let R=f(r),G=f(g),B=f(b);
+  let X=(R*0.4124+G*0.3576+B*0.1805)/0.95047,Y=(R*0.2126+G*0.7152+B*0.0722),Z=(R*0.0193+G*0.1192+B*0.9505)/1.08883;
+  const h=t=>t>0.008856?Math.cbrt(t):(7.787*t+16/116);
+  X=h(X);Y=h(Y);Z=h(Z);
+  return [116*Y-16,500*(X-Y),200*(Y-Z)];
+}
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+
+function analyze(){
+  const d=imgData, bx=box;
+  const inBox=(x,y)=>x>=bx.x&&x<bx.x+bx.w&&y>=bx.y&&y<bx.y+bx.h;
+  // background ring: box expanded by 0.8 of its size each side
+  const ex=bx.w*0.8, ey=bx.h*0.8;
+  const rx0=Math.max(0,bx.x-ex), ry0=Math.max(0,bx.y-ey), rx1=Math.min(W,bx.x+bx.w+ex), ry1=Math.min(H,bx.y+bx.h+ey);
+  const L=new Float32Array(W*H);
+  for(let i=0,p=0;i<W*H;i++,p+=4) L[i]=0.299*d[p]+0.587*d[p+1]+0.114*d[p+2];
+  // gradient
+  const G=new Float32Array(W*H);
+  for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++){const i=y*W+x;const gx=L[i+1]-L[i-1],gy=L[i+W]-L[i-W];G[i]=Math.hypot(gx,gy);}
+  let bgL=[],bgG=[];
+  let A={n:0,r:0,g:0,b:0,L:0,G:0}, B={n:0,r:0,g:0,b:0,L:0,G:0};
+  const useRing=(()=>{let n=0;for(let y=ry0|0;y<ry1;y+=2)for(let x=rx0|0;x<rx1;x+=2)if(!inBox(x,y))n++;return n>400;})();
+  const isBg=(x,y)=>!inBox(x,y)&&(!useRing||(x>=rx0&&x<rx1&&y>=ry0&&y<ry1));
+  for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++){
+    const i=y*W+x,p=i*4; const o=inBox(x,y)?A:(isBg(x,y)?B:null); if(!o) continue;
+    o.n++;o.r+=d[p];o.g+=d[p+1];o.b+=d[p+2];o.L+=L[i];o.G+=G[i];
+    if(o===B&&(x+y)%3===0){bgL.push(L[i]);bgG.push(G[i]);}
+  }
+  if(A.n<200||B.n<200) return null;
+  bgL.sort((a,b)=>a-b); bgG.sort((a,b)=>a-b);
+  const q=(arr,f)=>arr[Math.min(arr.length-1,Math.floor(arr.length*f))];
+  const bgMed=q(bgL,.5), bgP99=q(bgL,.995), bgG95=q(bgG,.95);
+  const snowy=state.ground==="snow"||(bgMed>185);
+
+  const cnt={A:{glare:0,skin:0,dark:0,uv:0,edge:0},B:{glare:0,skin:0,dark:0,uv:0,edge:0}};
+  const mk=[];
+  for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++){
+    const ib=inBox(x,y); const bg=!ib&&isBg(x,y); if(!ib&&!bg) continue;
+    const i=y*W+x,p=i*4,r=d[p],g=d[p+1],b=d[p+2],l=L[i];
+    const mx=Math.max(r,g,b),mn=Math.min(r,g,b),sat=mx?(mx-mn)/mx:0;
+    const C=ib?cnt.A:cnt.B;
+    // glare: near-white specular, brighter than almost all of the field
+    const glare=(l>=242&&sat<0.22)||(l>Math.min(250,bgP99+18)&&sat<0.3);
+    // skin-like: YCbCr window, warmer/pinker than straw
+    const Cr=128+0.5*r-0.4187*g-0.0813*b, Cb=128-0.1687*r-0.3313*g+0.5*b;
+    const skin=!glare&&l>90&&Cr>150&&Cr<180&&Cb>98&&Cb<128&&r>g&&g>=b*0.9&&(r-g)>25;
+    // dark hole / hard shadow
+    const dark=snowy?(l<bgMed*0.55):(l<Math.min(55,bgMed*0.38));
+    // blue / brightened white fabric (UV suspicious)
+    const uv=!glare&&((b>r+18&&b>g+6&&l>80)||(!snowy&&l>205&&sat<0.08));
+    const edge=G[i]>bgG95*1.15;
+    if(glare)C.glare++; if(skin)C.skin++; if(dark)C.dark++; if(uv)C.uv++; if(edge)C.edge++;
+    if(ib&&(x%2===0&&y%2===0)){
+      if(glare)mk.push({x,y,c:"#ff3b30"}); else if(skin)mk.push({x,y,c:"#ff9f0a"});
+      else if(dark)mk.push({x,y,c:"#bf5af2"}); else if(uv)mk.push({x,y,c:"#0a84ff"});
+    }
+  }
+  const fa=k=>cnt.A[k]/A.n, fb=k=>cnt.B[k]/B.n;
+  const exc=k=>Math.max(0,fa(k)-fb(k));
+  const mA=[A.r/A.n,A.g/A.n,A.b/A.n], mB=[B.r/B.n,B.g/B.n,B.b/B.n];
+  const la=lab(...mA), lb=lab(...mB);
+  const dE=Math.hypot(la[0]-lb[0],la[1]-lb[1],la[2]-lb[2]);
+  const dLrel=Math.abs(A.L/A.n-B.L/B.n)/Math.max(30,B.L/B.n);
+  const tex=(A.G/A.n)/Math.max(1,B.G/B.n);
+  const farK=state.dist==="4"?1:(state.dist==="10"?1.25:1.5);
+  // glare: count blobs-ish via pixel fraction, but a handful of pixels already matters
+  const glarePx=cnt.A.glare-fb("glare")*A.n;
+  const v={
+    glare: clamp((glarePx/Math.max(1,A.n))/0.003*farK + (glarePx>6?0.25:0)),
+    skin:  clamp(exc("skin")/0.025*farK),
+    dark:  clamp(exc("dark")/0.07),
+    color: clamp((dE-5)/20),
+    bright:clamp((dLrel-0.08)/0.35),
+    texture: clamp(tex<1?(0.85-tex)/0.5:(tex-1.7)/1.2),
+    edges: clamp(exc("edge")/0.08),
+    uv:    clamp(exc("uv")/0.03*farK)
+  };
+  return {v,marks:mk,dE,tex,snowy};
+}
+
+// ---- model
+const LBL={
+  glare:"Блик (лицо, ствол, ткань, очки)",
+  skin:"Светлое пятно кожи (лицо, руки)",
+  dark:"Тёмная «дыра» окопа, резкая тень",
+  color:"Цвет не совпадает с полем",
+  bright:"Окоп светлее или темнее поля",
+  texture:"Фактура: ровное пятно, не похоже на стерню",
+  edges:"Резкие прямые края (ствол, крышка, бровка)",
+  uv:"Синее или ярко-белое (светится в УФ)",
+  move:"Движение при подлёте",
+  face:"Лицо не закрыто",
+  gloves:"Голые руки",
+  gun:"Блестящий ствол, очки",
+  shells:"Гильзы, мусор",
+  tracks:"Следы, свежая земля, примятая стерня",
+  wash:"Одежда стирана с отбеливателем",
+  cond:"Условия (вид, сезон, стая, свет)"
+};
+const FIX={
+  glare:"Найдите на фото красные точки. Лицо — под маску, ствол — в чехол или замотать матовой лентой, очки снять. Новую ткань окопа натереть грязью: она блестит, пока не обтёрлась.",
+  skin:"Маска или сетка на лицо, перчатки. Когда гусь подходит, смотреть вниз, а не вверх: светлое лицо, поднятое к небу, — классическая причина, почему стая отваливает.",
+  dark:"Закрыть горловину окопа соломой из этого же поля, чтобы не было чёрного провала. Тень с солнечной стороны сгладить пучками стерни, травы или перекати-поля; можно поставить пару чучел так, чтобы они разбили тень.",
+  color:"Маскировку брать только с этого участка поля: стерня в соседнем поле другого цвета. В снегу — белое, которое не отдаёт синевой в пасмурную погоду.",
+  bright:"Окоп выделяется по яркости. Добавить сверху соломы (если темнее поля) или притушить светлое грязью и сухой травой (если светлее).",
+  texture:"Ровное гладкое пятно — это ткань или крышка. Набить соломы в стропы так же густо, как стоит стерня вокруг, чтобы фактура совпала.",
+  edges:"Сломать прямые линии: края окопа, крышку, ствол. В природе прямых линий почти нет.",
+  uv:"Синие и белые вещи убрать. Охотничье стирать без отбеливателей. На снегу проверить, что белый маскхалат не синеет в пасмурную погоду.",
+  move:"Один человек командует «бей», остальные не шевелятся до команды. Гусь сильнее всего реагирует на движение.",
+  face:"Надеть маску или сетку на лицо.",
+  gloves:"Надеть перчатки: руки светлые и двигаются.",
+  gun:"Закрыть ствол чехлом или матовой лентой.",
+  shells:"Собрать гильзы и мусор вокруг окопа: блестят и выдают место.",
+  tracks:"Замаскировать тропу к окопу и свежую землю, поднять примятую стерню граблями.",
+  wash:"Перестирать охотничью одежду средством без отбеливателей или обработать антиУФ-спреем.",
+  cond:"Условия против вас: битый гусь, большая стая или яркое солнце. Тут решает только идеальная маскировка, а если можно — сдвинуться к краю поля или под тень лесополосы."
+};
+
+function score(a){
+  const s=state, v=Object.assign({},a.v);
+  // light & sun modifiers
+  const mul={glare:1,skin:1,dark:1,color:1,bright:1,texture:1,edges:1,uv:1};
+  if(s.sky==="sun"){mul.glare*=1.3;mul.dark*=1.3;}
+  if(s.sky==="partly"){mul.glare*=1.1;}
+  if(s.sky==="overcast"){mul.glare*=0.6;mul.dark*=0.8;}
+  if(s.sky==="fog"){for(const k in mul)mul[k]*=0.65;}
+  if(s.time==="dawn"||s.time==="dusk"){mul.glare*=0.55;mul.color*=0.8;mul.skin*=1.15;mul.uv*=1.15;}
+  if(s.time==="day"){mul.glare*=1.15;}
+  if(s.sunpos==="face"){mul.skin*=1.3;mul.glare*=1.3;}
+  if(s.sunpos==="behind"){mul.glare*=0.8;}
+  if(s.ground==="snow"){mul.dark*=1.3;mul.color*=1.2;}
+  const W={glare:2.4,skin:2.0,dark:1.6,color:1.4,bright:0.9,texture:0.8,edges:0.9,uv:0.6};
+  const parts={};
+  for(const k in W) parts[k]=W[k]*clamp(v[k]*mul[k],0,1.3);
+  // checklist (what the photo cannot show)
+  const ck=id=>$("#c_"+id).checked;
+  parts.move=ck("move")?0:1.3;
+  parts.face=ck("face")?0:0.8*(1-clamp(v.skin));
+  parts.gloves=ck("gloves")?0:0.25;
+  parts.gun=ck("gun")?0:0.35*(1-clamp(v.glare));
+  parts.shells=ck("shells")?0:0.25;
+  parts.tracks=ck("tracks")?0:0.35;
+  parts.wash=ck("wash")?0:0.2;
+  // conditions
+  const C={
+    species:{grey:0.35,bean:0.25,white:0,lesser:-0.4,redb:-0.2,unk:0.1},
+    season:{early:-0.45,mid:0,late:0.55,spring:0.3},
+    pressure:{none:-0.45,some:0.15,heavy:0.7},
+    flock:{few:-0.25,family:0,big:0.4,huge:0.7},
+    wind:{calm:0.35,mod:0,strong:-0.35},
+    time:{dawn:-0.3,morning:0,day:0.3,evening:0,dusk:-0.4},
+    sunpos:{behind:-0.35,side:0,face:0.2,none:0}
+  };
+  let cond=0; for(const k in C) cond+=C[k][s[k]]||0;
+  parts.cond=Math.max(0,cond);
+  let logit=-2.1+cond;
+  for(const k in parts) if(k!=="cond") logit+=parts[k];
+  const p=clamp(1/(1+Math.exp(-logit)),0.03,0.97);
+  return {p,parts,cond};
+}
+
+function render(a,r){
+  const pct=Math.round(r.p*100);
+  $("#pSee").innerHTML=pct+"% <small>заметит</small>";
+  $("#pNot").textContent=(100-pct)+"% — не заметит и подойдёт";
+  const lv=pct<25?"g":(pct<50?"y":"r");
+  document.querySelectorAll(".light i").forEach(i=>i.classList.toggle("on",i.classList.contains(lv)));
+  $("#verdict").textContent=lv==="g"?"Окоп спрятан хорошо. Главное — не шевелиться на подлёте.":
+    lv==="y"?"Есть что подправить: см. список ниже, начиная сверху.":"Высокий риск, что стая отвалит. Сначала исправьте первые пункты списка.";
+  const items=Object.entries(r.parts).filter(([k,x])=>x>0.05).sort((a,b)=>b[1]-a[1]);
+  const max=Math.max(1.5,...items.map(i=>i[1]));
+  $("#bars").innerHTML=items.length?items.map(([k,x])=>{
+    const w=Math.round(x/max*100), col=x>1?"var(--red)":(x>0.45?"var(--yellow)":"var(--green)");
+    const lvl=x>1?"сильно":(x>0.45?"заметно":"слабо");
+    return `<div class="bar"><span class="lbl">${LBL[k]}</span><span class="val">${lvl}</span><div class="track"><b style="width:${w}%;background:${col}"></b></div></div>`;
+  }).join(""):'<p class="muted">Ничего заметного не найдено.</p>';
+  const fx=items.filter(([k,x])=>x>0.3).slice(0,5);
+  $("#fixes").innerHTML=fx.length?fx.map(([k])=>`<div class="fix"><b>${LBL[k]}</b>${FIX[k]}</div>`).join(""):
+    '<div class="fix"><b>Всё в порядке</b>Сделайте ещё один кадр подальше (15–25 м), чтобы проверить окоп и издалека.</div>';
+  $("#result").style.display="block";
+  drawGoose();
+  $("#result").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+$("#btnRun").onclick=()=>{
+  if(!img) return;
+  const a=analyze();
+  if(!a){toast("Рамка слишком маленькая или занимает всё фото");return;}
+  marks=a.marks; const r=score(a);
+  last={a,r,when:new Date().toISOString(),cond:Object.assign({},state)};
+  render(a,r);
+};
+$("#btnMarks").onclick=()=>{showMarks=!showMarks;draw();$("#btnMarks").textContent=showMarks?"Скрыть отметки":"Показать на фото";$("#photoWrap").scrollIntoView({behavior:"smooth"});};
+
+// ---- goose-eye view
+function drawGoose(){
+  if(!img) return;
+  const dGoose=+$("#gDist").value; $("#gDistV").textContent=dGoose;
+  const photoDist=+state.dist; const sceneW=photoDist*1.1; // metres across the frame (approx.)
+  const res=dGoose*0.0024;               // ~8 arcmin goose acuity -> metres per resolvable detail
+  const cols=clamp(Math.round(sceneW/res),6,W);
+  const rows=Math.max(4,Math.round(cols*H/W));
+  const small=document.createElement("canvas"); small.width=cols; small.height=rows;
+  const sx=small.getContext("2d"); sx.imageSmoothingEnabled=true; sx.imageSmoothingQuality="high";
+  sx.drawImage(img,0,0,cols,rows);
+  const cv=$("#gooseView"); cv.width=W; cv.height=H;
+  const x=cv.getContext("2d"); x.imageSmoothingEnabled=true; x.imageSmoothingQuality="high";
+  x.drawImage(small,0,0,W,H);
+  // glare stays visible as a point of light even when detail is gone
+  if(marks){
+    x.globalCompositeOperation="lighter";
+    const sz=Math.max(3,W/cols*0.6);
+    for(const m of marks) if(m.c==="#ff3b30"){
+      const g=x.createRadialGradient(m.x,m.y,0,m.x,m.y,sz);
+      g.addColorStop(0,"rgba(255,255,255,.35)");g.addColorStop(1,"rgba(255,255,255,0)");
+      x.fillStyle=g;x.fillRect(m.x-sz,m.y-sz,sz*2,sz*2);
+    }
+    x.globalCompositeOperation="source-over";
+  }
+}
+$("#gDist").addEventListener("input",drawGoose);
+
+// ---- journal (local, optional)
+const KEY="gus_journal_v1";
+function jLoad(){try{return JSON.parse(localStorage.getItem(KEY)||"[]");}catch(e){return [];}}
+function jSave(a){try{localStorage.setItem(KEY,JSON.stringify(a));return true;}catch(e){return false;}}
+const OUT={landed:"🎯 подошли",flared:"↗️ отвернули",passed:"➡️ мимо"};
+const SP={white:"белолобый",grey:"серый",bean:"гуменник",lesser:"пискулька",redb:"краснозобая",unk:"?"};
+function jRender(){
+  const a=jLoad(); const el=$("#journal");
+  if(!a.length){el.textContent="Пока пусто.";return;}
+  const fl=a.filter(e=>e.out==="flared").length, pr=Math.round(a.reduce((s,e)=>s+e.p,0)/a.length);
+  el.innerHTML=`<p>Записей: ${a.length}. Среднее предсказание «заметит»: ${pr}%. Реально отвернули: ${Math.round(fl/a.length*100)}%.</p>`+
+   `<table class="j"><tr><th>Дата</th><th>Гусь</th><th>Прогноз</th><th>Итог</th></tr>`+
+   a.slice().reverse().slice(0,30).map(e=>`<tr><td>${e.when.slice(0,10)}</td><td>${SP[e.cond.species]||""}</td><td>${e.p}%</td><td>${OUT[e.out]}</td></tr>`).join("")+`</table>`;
+}
+document.querySelectorAll("[data-out]").forEach(b=>b.onclick=()=>{
+  if(!last){toast("Сначала оценка");return;}
+  const a=jLoad(); a.push({when:last.when,p:Math.round(last.r.p*100),cond:last.cond,v:last.a.v,out:b.dataset.out});
+  toast(jSave(a)?"Записано в журнал":"Не удалось сохранить на этом устройстве"); jRender();
+});
+$("#btnCopy").onclick=async()=>{
+  try{await navigator.clipboard.writeText(JSON.stringify(jLoad(),null,1));toast("Журнал скопирован");}
+  catch(e){toast("Копирование недоступно");}
+};
+let clearArm=false;
+$("#btnClear").onclick=()=>{
+  if(!clearArm){clearArm=true;$("#btnClear").textContent="Нажмите ещё раз — удалить всё";setTimeout(()=>{clearArm=false;$("#btnClear").textContent="Очистить";},3000);return;}
+  jSave([]);clearArm=false;$("#btnClear").textContent="Очистить";jRender();
+};
+jRender();
+
+// ---- offline (works when hosted as a normal site, e.g. GitHub Pages)
+if("serviceWorker" in navigator){try{navigator.serviceWorker.register("sw.js").catch(()=>{});}catch(e){}}
+
+// test hook
+window.__gus={loadImage,analyze,score,state,setBox:b=>{box=b;}};
+})();
+</script>
+</body>
+</html>
